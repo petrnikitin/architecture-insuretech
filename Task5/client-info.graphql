@@ -1,0 +1,193 @@
+# GraphQL Schema для client-info service
+
+"""
+Клиент системы
+"""
+type Client {
+  """
+  Уникальный идентификатор клиента
+  """
+  id: ID!
+
+  """
+  ФИО клиента
+  """
+  name: String!
+
+  """
+  Возраст клиента
+  """
+  age: Int
+
+  """
+  Документы клиента (паспорт, водительское удостоверение и т.д.)
+  """
+  documents: [Document!]!
+
+  """
+  Родственники клиента
+  """
+  relatives: [Relative!]!
+}
+
+"""
+Документ клиента
+"""
+type Document {
+  """
+  Уникальный идентификатор документа
+  """
+  id: ID!
+
+  """
+  Тип документа (паспорт, водительское удостоверение, СНИЛС и т.д.)
+  """
+  type: String!
+
+  """
+  Номер документа
+  """
+  number: String!
+
+  """
+  Дата выдачи документа
+  """
+  issueDate: String!
+
+  """
+  Дата окончания срока действия документа
+  """
+  expiryDate: String
+}
+
+"""
+Родственник клиента
+"""
+type Relative {
+  """
+  Уникальный идентификатор родственника
+  """
+  id: ID!
+
+  """
+  Тип родства (супруг, ребёнок, родитель и т.д.)
+  """
+  relationType: String!
+
+  """
+  ФИО родственника
+  """
+  name: String!
+
+  """
+  Возраст родственника
+  """
+  age: Int
+}
+
+"""
+Корневой тип для запросов (queries)
+"""
+type Query {
+  """
+  Получить информацию о клиенте по ID
+
+  Пример запроса только базовых данных:
+  query {
+    client(id: "123") {
+      id
+      name
+      age
+    }
+  }
+
+  Пример запроса клиента с документами:
+  query {
+    client(id: "123") {
+      id
+      name
+      documents {
+        type
+        number
+        expiryDate
+      }
+    }
+  }
+
+  Пример запроса клиента со всеми связанными данными:
+  query {
+    client(id: "123") {
+      id
+      name
+      age
+      documents {
+        id
+        type
+        number
+        issueDate
+        expiryDate
+      }
+      relatives {
+        id
+        relationType
+        name
+        age
+      }
+    }
+  }
+  """
+  client(id: ID!): Client
+
+  """
+  Получить список клиентов с фильтрацией (опционально)
+
+  Пример запроса списка клиентов с только именами:
+  query {
+    clients(limit: 10) {
+      id
+      name
+    }
+  }
+  """
+  clients(
+    """
+    Максимальное количество клиентов в ответе
+    """
+    limit: Int
+
+    """
+    Смещение для пагинации
+    """
+    offset: Int
+  ): [Client!]!
+
+  """
+  Получить документы клиента по ID клиента
+
+  Пример:
+  query {
+    clientDocuments(clientId: "123") {
+      type
+      number
+    }
+  }
+
+  Примечание: Рекомендуется использовать вложенный запрос через client.documents
+  """
+  clientDocuments(clientId: ID!): [Document!]!
+
+  """
+  Получить родственников клиента по ID клиента
+
+  Пример:
+  query {
+    clientRelatives(clientId: "123") {
+      relationType
+      name
+    }
+  }
+
+  Примечание: Рекомендуется использовать вложенный запрос через client.relatives
+  """
+  clientRelatives(clientId: ID!): [Relative!]!
+}
